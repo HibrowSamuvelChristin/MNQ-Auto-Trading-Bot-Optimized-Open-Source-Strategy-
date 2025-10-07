@@ -1,0 +1,132 @@
+//@version=5
+strategy("Modified TJR Asia Session Sweep (Sample)",
+     "Modified Asia Sweep (Sample)",
+     overlay=true, max_lines_count=500, max_labels_count=500,
+     initial_capital=10000)
+
+// -------------------- Inputs --------------------
+groupVS = "Visual Settings"
+show_asian           = input.bool(true, "Show Asian Session", group=groupVS)
+show_london          = input.bool(true, "Show London Session", group=groupVS)
+show_swing_points    = input.bool(true, "Show Asian Swing Points", group=groupVS)
+show_market_structure= input.bool(true, "Show Market Structure", group=groupVS)
+show_bos             = input.bool(true, "Show Break of Structure", group=groupVS)
+
+groupSess = "Session Times"
+asian_start_hour_input  = input.int(22, "Asian Session Start Hour", minval=0, maxval=23, group=groupSess)
+asian_end_hour_input    = input.int(3,  "Asian Session End Hour",   minval=0, maxval=23, group=groupSess)
+london_start_hour_input = input.int(3,  "London Session Start Hour",minval=0, maxval=23, group=groupSess)
+london_end_hour_input   = input.int(8,  "London Session End Hour",  minval=0, maxval=23, group=groupSess)
+session_timezone        = input.string("America/New_York", "Session Timezone",
+                        options=["America/New_York","UTC-4","UTC","GMT"], group=groupSess)
+
+groupRM  = "Risk Management"
+use_atr_sl       = input.bool(false, "Use ATR Multiplier for Stop Loss", group=groupRM)
+atr_length       = input.int(14, "ATR Length", minval=1, maxval=50, group=groupRM)
+atr_multiplier   = input.float(2.0, "ATR Multiplier for Stop Loss", minval=0.5, maxval=10.0, group=groupRM)
+cutoff_minutes   = input.int(60, "Minutes Before Session End to Stop New Trades", minval=0, maxval=300, group=groupRM)
+
+groupPS  = "Position Sizing"
+position_sizing_method = input.string("USD Risk", "Position Sizing Method", options=["USD Risk","Fixed Contracts"], group=groupPS)
+usd_risk_per_trade     = input.float(100.0, "USD Risk Per Trade", minval=1.0, maxval=10000.0, group=groupPS)
+fixed_contracts        = input.float(1.0, "Fixed Number of Contracts", minval=0.01, maxval=1000.0, step=0.01, group=groupPS)
+// MNQ specifics
+pointValue             = input.float(2.0, "Point value (MNQ = $2/pt)", group=groupPS)
+
+asian_color   = input.color(color.red,   "Asian Session Color")
+london_color  = input.color(color.blue,  "London Session Color")
+swing_high_color = input.color(color.orange, "Swing High Color")
+swing_low_color  = input.color(color.lime,   "Swing Low Color")
+bos_color        = input.color(color.orange, "Break of Structure Color")
+line_width       = input.int(2, "Line Width", minval=1, maxval=5)
+
+// -------------------- Core calcs --------------------
+atr = ta.atr(atr_length)
+
+// Position sizing (MNQ-aware)
+calculate_position_size(entry_price, stop_loss_price) =>
+    if position_sizing_method == "Fixed Contracts"
+        fixed_contracts
+    else
+        stop_distance = math.abs(entry_price - stop_loss_price)      // points
+        riskPerContract = stop_distance * pointValue                 // USD
+        riskPerContract > 0 ? math.floor(usd_risk_per_trade / riskPerContract) : 0
+
+// -------------------- Sessions --------------------
+asian_start_hour  = asian_start_hour_input
+asian_end_hour    = asian_end_hour_input
+london_start_hour = london_start_hour_input
+london_end_hour   = london_end_hour_input
+
+current_hour = hour(time, session_timezone)
+prev_hour    = hour(time[1], session_timezone)
+
+asian_start  = current_hour == asian_start_hour  and prev_hour != asian_start_hour
+asian_end    = current_hour == asian_end_hour    and prev_hour != asian_end_hour
+london_start = current_hour == london_start_hour and prev_hour != london_start_hour
+london_end   = current_hour == london_end_hour   and prev_hour != london_end_hour
+
+asian_active  = (current_hour >= asian_start_hour) or (current_hour < asian_end_hour)
+london_active = (current_hour >= london_start_hour) and (current_hour < london_end_hour)
+
+var box asian_session_box  = na
+var box london_session_box = na
+
+// Create/maintain boxes (visual only)
+if show_asian and asian_start
+    asian_session_box := box.new(bar_index, high, bar_index+1, low,
+        border_color=asian_color, bgcolor=color.new(asian_color, 90), border_width=2)
+
+asian_session_length = asian_active and not na(asian_session_box) ? bar_index - box.get_left(asian_session_box) + 1 : 1
+current_asian_high = ta.highest(high, asian_session_length)
+current_asian_low  = ta.lowest(low,  asian_session_length)
+
+if show_asian and asian_active and not na(asian_session_box)
+    box.set_right(asian_session_box, bar_index)
+    box.set_top(asian_session_box, current_asian_high)
+    box.set_bottom(asian_session_box, current_asian_low)
+
+if show_london and london_start
+    london_session_box := box.new(bar_index, high, bar_index+1, low,
+        border_color=london_color, bgcolor=color.new(london_color, 90), border_width=2)
+
+london_session_length = london_active and not na(london_session_box) ? bar_index - box.get_left(london_session_box) + 1 : 1
+current_london_high = ta.highest(high, london_session_length)
+current_london_low  = ta.lowest(low,  london_session_length)
+
+if show_london and london_active and not na(london_session_box)
+    box.set_right(london_session_box, bar_index)
+    box.set_top(london_session_box, current_london_high)
+    box.set_bottom(london_session_box, current_london_low)
+
+// -------------------- Structure tracking (visual scaffolding) --------------------
+var float asian_session_high = na, asian_session_low = na
+var float asian_absolute_high = na, asian_absolute_low = na
+if asian_active and show_swing_points
+    asian_absolute_high := na(asian_absolute_high) ? high : math.max(asian_absolute_high, high)
+    asian_absolute_low  := na(asian_absolute_low)  ? low  : math.min(asian_absolute_low,  low)
+    asian_session_high  := na(asian_session_high)  ? high : math.max(asian_session_high,  high)
+    asian_session_low   := na(asian_session_low)   ? low  : math.min(asian_session_low,   low)
+
+// -------------------- Entries/Exits (edge redacted) --------------------
+longSetup  = false   // [REDACTED]: proprietary long logic
+shortSetup = false   // [REDACTED]: proprietary short logic
+
+// Example scaffold using ATR stops; values illustrative only
+if longSetup
+    sl = close - atr * atr_multiplier
+    qty = calculate_position_size(close, sl)
+    if qty > 0
+        strategy.entry("L", strategy.long, qty=qty)
+        strategy.exit("Lx", "L", stop=sl)
+
+if shortSetup
+    sl = close + atr * atr_multiplier
+    qty = calculate_position_size(close, sl)
+    if qty > 0
+        strategy.entry("S", strategy.short, qty=qty)
+        strategy.exit("Sx", "S", stop=sl)
+
+// -------------------- Notes --------------------
+// This is a public sample for recruiters. Core signal logic is intentionally omitted.
+// Backtests shown in README: $10k initial capital, $100 risk per trade, MNQ1! continuous.
