@@ -8,7 +8,7 @@ The base code was publicly available, but I used **ChatGPT-assisted debugging an
 ## ⚙️ Overview
 - **Platform:** TradingView (PineScript v5)  
 - **Symbol:** MNQ1!
-- **Timeframe: 5m
+- **Timeframe:** 5m
 - **Testing Period:** Jan 2019 – Oct 2025  
 - **Initial Deposit:** 10,000 USD  
 - **Risk Per Trade:** 100 USD  
