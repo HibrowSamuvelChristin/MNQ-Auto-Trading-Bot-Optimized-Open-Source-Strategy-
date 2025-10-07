@@ -23,7 +23,18 @@ The base code was publicly available, but I used **ChatGPT-assisted debugging an
 - **Profitable Trades:** 38.8%  
 - **Max Equity Drawdown:** 6,423.00 USD (40.25%)  
 - **Max Contracts Held:** 28  
-- **Backtest Duration:** 6.5 years  
+- **Backtest Duration:** 6.5 years
+- 
+### 📊 Before Optimization
+| Performance | Equity Curve |
+|:--|:--|
+| ![Before Performance](media/before_performance.png) | ![Before Equity](media/before_equity_curve.png) |
+
+### 🚀 After Optimization
+| Performance | Equity Curve |
+|:--|:--|
+| ![After Performance](media/after_performance.png) | ![After Equity](media/after_equity_curve.png) |
+
 
 Screenshots of the full results are available in the `/media` folder.
 
