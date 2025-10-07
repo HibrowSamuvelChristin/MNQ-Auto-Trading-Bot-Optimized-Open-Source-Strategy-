@@ -1,0 +1,26 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Archives & docs you don’t want versioned
+*.zip
+*.rar
+*.7z
+*.pdf
+*.csv
+*.xlsx
+
+# Large media you won’t keep in git (keep screenshots!)
+*.mp4
+*.mov
+*.avi
+*.wav
+
+# Python/temp (if you experiment locally)
+__pycache__/
+*.pyc
+
+# Logs
+*.log
