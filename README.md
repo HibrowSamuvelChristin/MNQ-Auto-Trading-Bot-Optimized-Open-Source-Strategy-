@@ -5,7 +5,7 @@ The base code was publicly available, but I used **ChatGPT-assisted debugging an
 
 ---
 
-## ⚙️ Overview
+## Overview
 - **Platform:** TradingView (PineScript v5)  
 - **Symbol:** MNQ1!
 - **Timeframe:** 5m
@@ -17,7 +17,7 @@ The base code was publicly available, but I used **ChatGPT-assisted debugging an
 
 ---
 
-## 📈 Strategy Performance Summary
+## Strategy Performance Summary
 - **Total P&L:** +25,926.50 USD (+259.27%)  
 - **Profit Factor:** 1.205  
 - **Total Trades:** 1,219  
@@ -26,12 +26,12 @@ The base code was publicly available, but I used **ChatGPT-assisted debugging an
 - **Max Contracts Held:** 28  
 - **Backtest Duration:** 6.5 years
 - 
-### 📊 Before Optimization
+### Before Optimization
 | Performance | Equity Curve |
 |:--|:--|
 | ![Before Performance](media/before_performance.png) | ![Before Equity](media/before_equity_curve.png) |
 
-### 🚀 After Optimization
+### After Optimization
 | Performance | Equity Curve |
 |:--|:--|
 | ![After Performance](media/after_performance.png) | ![After Equity](media/after_equity_curve.png) |
@@ -41,7 +41,7 @@ Screenshots of the full results are available in the `/media` folder.
 
 ---
 
-## 🔍 What Was Fixed / Improved
+## What Was Fixed / Improved
 - Corrected **stop-loss logic** that caused premature exits.  
 - Removed redundant **“force trade stop”** parameter which prevented valid setups.  
 - Adjusted **ATR length and multiplier** for MNQ volatility conditions.  
@@ -51,7 +51,7 @@ Screenshots of the full results are available in the `/media` folder.
 
 ---
 
-## 🧠 Tools & Skills Used
+## Tools & Skills Used
 - **TradingView PineScript (v5)** for strategy development and debugging  
 - **Quantitative analysis** and trade performance evaluation  
 - **Risk management** and fixed-dollar position sizing  
@@ -59,7 +59,7 @@ Screenshots of the full results are available in the `/media` folder.
 
 ---
 
-## 🧩 Code Sample
+## Code Sample
 A partial version of the optimized PineScript is shared in [`main_sample.pine`](./main_sample.pine).  
 For intellectual-property reasons, the **core entry/exit logic** has been removed.
 
